@@ -38,6 +38,7 @@ public class WifiConnect extends Activity {
     TextView connectedWifi;
     int count;
     String macTest;
+    boolean doubleBackToExitPressedOnce = false;
 
 
     @Override
@@ -56,7 +57,7 @@ public class WifiConnect extends Activity {
         wifiListAdapter = new CustomListViewAdapter(this,wifiArray);
 
         if(!wifiManager.isWifiEnabled()){
-            Toast.makeText(WifiConnect.this,"enabling wifi",Toast.LENGTH_SHORT).show();
+            Toast.makeText(WifiConnect.this,"enabling wifi",Toast.LENGTH_LONG).show();
             wifiManager.setWifiEnabled(true);
         }
         registerReceiver(wifiReceiver,new IntentFilter(wifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -64,6 +65,10 @@ public class WifiConnect extends Activity {
                 new AdapterView.OnItemClickListener(){
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        if(!wifiManager.isWifiEnabled()){
+                            wifiManager.setWifiEnabled(true);
+                            Toast.makeText(WifiConnect.this, "Enabling Wifi", Toast.LENGTH_LONG).show();
+                        }
                         ssid = wifiScanList.get(position).SSID;
                         mac = wifiScanList.get(position).BSSID;
                         decode();
@@ -113,7 +118,7 @@ public class WifiConnect extends Activity {
             @Override
             public void run() {
                 if(!wifiManager.isWifiEnabled()){
-                    Toast.makeText(WifiConnect.this,"enabling wifi",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WifiConnect.this,"enabling wifi",Toast.LENGTH_LONG).show();
                     wifiManager.setWifiEnabled(true);
                 }
                 wifiManager.startScan();
@@ -197,5 +202,23 @@ public class WifiConnect extends Activity {
             wifiManager.saveConfiguration();
         }
         super.onDestroy();
+    }
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
     }
 }

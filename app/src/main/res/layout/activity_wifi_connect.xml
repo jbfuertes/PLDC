@@ -8,6 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#000"
     tools:context="com.example.johnberlinfuertes.pldc.WifiConnect">
     <TextView
         android:id="@+id/connectedWifi"
@@ -16,7 +17,8 @@
         android:layout_marginBottom="420dp"
         android:textSize="25sp"
         android:text="Select a wifi on list and it will automatically try to connect"
-        android:textAllCaps="false" />
+        android:textAllCaps="false"
+        android:textColor="#FFF"/>
     <ListView
         android:id="@+id/availableWifi"
         android:layout_width="match_parent"
@@ -38,5 +40,6 @@
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="100dp"
         android:hint="Link premium Code here!!"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:textColor="#FFF" />
 </RelativeLayout>

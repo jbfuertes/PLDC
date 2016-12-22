@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="@drawable/teddybear"
+    android:background="#000"
     tools:context="com.example.johnberlinfuertes.pldc.MainActivity">
 
 
@@ -16,16 +16,16 @@
         android:id="@+id/disclaimer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="300dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginTop="200dp"
         android:textSize="20sp"
-        android:textColor="#00FF05"/>
+        android:textColor="#FFF"/>
     <Button
         android:id="@+id/declineButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginRight="200dp"
+        android:layout_marginBottom="100dp"
         android:text="Decline"
         android:onClick="declineButtonClicked"/>
     <Button
@@ -34,6 +34,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="200dp"
+        android:layout_marginBottom="100dp"
         android:text="Accept"
         android:onClick="acceptButtonClicked"/>
 
