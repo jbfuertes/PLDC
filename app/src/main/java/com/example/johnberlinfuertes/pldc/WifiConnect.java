@@ -259,6 +259,7 @@ public class WifiConnect extends Activity {
             }
         }catch (Exception e){
             Toast.makeText(WifiConnect.this,"This PLDT wifi is currently not supported!",Toast.LENGTH_LONG).show();
+            password = null;
         }
     }
 
