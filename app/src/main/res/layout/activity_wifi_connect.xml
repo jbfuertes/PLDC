@@ -18,13 +18,25 @@
         android:textSize="25sp"
         android:text="Select a wifi on list and it will automatically try to connect"
         android:textAllCaps="false"
-        android:textColor="#FFF"/>
+        android:textColor="#FFF"
+        android:visibility="visible"/>
+    <TextView
+        android:id="@+id/listedWifi"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="420dp"
+        android:textSize="25sp"
+        android:text="List of wifi and its password"
+        android:textAllCaps="false"
+        android:textColor="#FFF"
+        android:visibility="gone"/>
     <ListView
         android:id="@+id/availableWifi"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="100dp"
-        android:layout_marginBottom="150dp">
+        android:layout_marginBottom="150dp"
+        android:visibility="visible">
     </ListView>
     <Button
         android:id="@+id/buttonPassword"
@@ -32,14 +44,59 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:text="link code"
-        android:onClick="onCodeClicked"/>
+        android:onClick="onCodeClicked"
+        android:visibility="gone"/>
     <EditText
         android:id="@+id/codeText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_marginLeft="100dp"
-        android:hint="Link premium Code here!!"
+        android:hint="Link Code here!!"
+        android:textColorHint="#FFF"
         android:textAlignment="center"
-        android:textColor="#FFF" />
+        android:textColor="#FFF"
+        android:visibility="gone"
+        android:backgroundTint="#FFF"/>
+    <Button
+        android:id="@+id/gotCodeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="Got Code?"
+        android:textAllCaps="false"
+        android:onClick="onClickedGotCode"
+        android:visibility="visible"/>
+    <TextView
+        android:id="@+id/passwordList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="100dp"
+        android:layout_marginLeft="225dp"
+        android:textAllCaps="false"
+        android:textColor="#FFF"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/ssidlist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="100dp"
+        android:layout_marginRight="175dp"
+        android:textAllCaps="false"
+        android:textColor="#FFF"
+        android:visibility="gone"/>
+    <ToggleButton
+        android:id="@+id/showSsidList"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:background="@drawable/selector"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="show password list"
+        android:textOff=""
+        android:textOn=""
+        android:onClick="onTogleBtnClicked"
+        android:visibility="gone" />
 </RelativeLayout>

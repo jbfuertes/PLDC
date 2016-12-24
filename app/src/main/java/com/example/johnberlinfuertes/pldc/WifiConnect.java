@@ -12,10 +12,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +40,20 @@ public class WifiConnect extends Activity {
     WifiConfiguration wificonfig;
     TextView connectedWifi;
     int count;
-    String macTest;
     boolean doubleBackToExitPressedOnce = false;
+    Button buttonPassword;
+    EditText codeText;
+    Button gotCodeButton;
+    TextView ssidlist;
+    TextView passwordList;
+    TextView listedWifi;
+    ToggleButton showSsidList;
+    String testCode;
+    DBHandler dbHandler;
+    Code code;
+    String onCreateTestCode;
+    String lp = "PASSWORD";
+    String ls = "SSID";
 
 
     @Override
@@ -46,15 +61,34 @@ public class WifiConnect extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wifi_connect);
         availableWifi = (ListView)findViewById(R.id.availableWifi);
+        gotCodeButton = (Button) findViewById(R.id.gotCodeButton);
+        codeText = (EditText)findViewById(R.id.codeText);
+        buttonPassword = (Button)findViewById(R.id.buttonPassword);
+        connectedWifi = (TextView)findViewById(R.id.connectedWifi);
+        listedWifi = (TextView)findViewById(R.id.listedWifi);
+        showSsidList = (ToggleButton)findViewById(R.id.showSsidList);
+        ssidlist = (TextView)findViewById(R.id.ssidlist);
+        passwordList = (TextView)findViewById(R.id.passwordList);
         wifiReceiver = new WifiScanReceiver();
         wificonfig = new WifiConfiguration();
-        connectedWifi = (TextView)findViewById(R.id.connectedWifi);
+        dbHandler = new DBHandler(this, null, null , 1);
 
         wifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
 
         wifiScanList = wifiManager.getScanResults();
         wifiArray = new String[wifiScanList.size()];
         wifiListAdapter = new CustomListViewAdapter(this,wifiArray);
+
+        try {
+            code = dbHandler.getCode(1);
+            onCreateTestCode = code.get_Code();
+            if(onCreateTestCode.equals("aw56uff65r40")){
+                gotCodeButton.setVisibility(View.GONE);
+                showSsidList.setVisibility(View.VISIBLE);
+            }
+        }catch (Exception e){
+
+        }
 
         if(!wifiManager.isWifiEnabled()){
             Toast.makeText(WifiConnect.this,"enabling wifi",Toast.LENGTH_LONG).show();
@@ -78,12 +112,20 @@ public class WifiConnect extends Activity {
                             return;
                         }
                         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-                        for(WifiConfiguration i : list){
-                            if(i.SSID == null){
-                                break;
+                        if(onCreateTestCode==null) {
+                            for (WifiConfiguration i : list) {
+                                if (i.SSID == null) {
+                                    break;
+                                }
+                                wifiManager.removeNetwork(i.networkId);
+                                wifiManager.saveConfiguration();
                             }
-                            wifiManager.removeNetwork(i.networkId);
-                            wifiManager.saveConfiguration();
+                        }
+                        if(!ls.contains(ssid)||!lp.contains(password)) {
+                            ls = ls + "\n" + ssid;
+                            lp = lp + "\n" + password;
+                            ssidlist.setText(ls);
+                            passwordList.setText(lp);
                         }
                         wificonfig.SSID = "\"" + ssid + "\"";
                         wificonfig.preSharedKey = "\""+password+"\"";
@@ -91,11 +133,10 @@ public class WifiConnect extends Activity {
                         list = wifiManager.getConfiguredNetworks();
                         count = 0;
                         for( WifiConfiguration i : list ) {
-                            if(i.SSID != null && i.SSID.equals("\"" + ssid + "\"")/*&&macTest==mac*/) {
+                            if(i.SSID != null && i.SSID.equals("\"" + ssid + "\"")) {
                                 wifiManager.disconnect();
                                 wifiManager.enableNetwork(i.networkId, true);
                                 wifiManager.reconnect();
-                                //Toast.makeText(WifiConnect.this,i.SSID,Toast.LENGTH_LONG).show();
                                 connectedWifi.setText("Connecting To: "+ssid);
                                 break;
                             }
@@ -104,6 +145,25 @@ public class WifiConnect extends Activity {
                 }
         );
         wifiDetectionThread();
+    }
+
+    public void onTogleBtnClicked(View view) {
+        Boolean on = ((ToggleButton)view).isChecked();
+        if(on){
+            availableWifi.setVisibility(View.GONE);
+            passwordList.setVisibility(View.VISIBLE);
+            ssidlist.setVisibility(View.VISIBLE);
+            listedWifi.setVisibility(View.VISIBLE);
+            connectedWifi.setVisibility(View.GONE);
+        }
+        else {
+            availableWifi.setVisibility(View.VISIBLE);
+            passwordList.setVisibility(View.GONE);
+            ssidlist.setVisibility(View.GONE);
+            listedWifi.setVisibility(View.GONE);
+            connectedWifi.setVisibility(View.VISIBLE);
+        }
+
     }
 
     class WifiScanReceiver extends BroadcastReceiver{
@@ -121,6 +181,9 @@ public class WifiConnect extends Activity {
                     Toast.makeText(WifiConnect.this,"enabling wifi",Toast.LENGTH_LONG).show();
                     wifiManager.setWifiEnabled(true);
                 }
+                int index = availableWifi.getFirstVisiblePosition();
+                View v = availableWifi.getChildAt(0);
+                int top = (v == null) ? 0 : v.getTop();
                 wifiManager.startScan();
                 wifiScanList = wifiManager.getScanResults();
                 wifiArray = new String[wifiScanList.size()];
@@ -131,10 +194,27 @@ public class WifiConnect extends Activity {
                 }
                 wifiListAdapter = new CustomListViewAdapter(WifiConnect.this, wifiArray);
                 availableWifi.setAdapter(wifiListAdapter);
-                handler.postDelayed(this,5000);
+                availableWifi.setSelectionFromTop(index,top);
+                handler.postDelayed(this,10000);
             }
         },1000);
 
+    }
+    public void onClickedGotCode(View view){
+        gotCodeButton.setVisibility(View.GONE);
+        codeText.setVisibility(View.VISIBLE);
+        buttonPassword.setVisibility(View.VISIBLE);
+    }
+    public void onCodeClicked(View view){
+        testCode = codeText.getText().toString();
+        if(testCode.equals("aw56uff65r40")){
+            dbHandler.addCode(new Code(testCode));
+            buttonPassword.setVisibility(View.GONE);
+            codeText.setVisibility(View.GONE);
+            showSsidList.setVisibility(View.VISIBLE);
+
+        }
+        else Toast.makeText(WifiConnect.this,"Invalid Code!!",Toast.LENGTH_LONG).show();
     }
 
     public void decode(){
@@ -155,28 +235,31 @@ public class WifiConnect extends Activity {
         hexTable.put('d',"2");
         hexTable.put('e',"1");
         hexTable.put('f',"0");
-        if(ssid.contains("PLDTHOMEFIBR_")&&ssid.length()==19){
-            password = "wlan"+hexTable.get(ssid.charAt(13))+hexTable.get(ssid.charAt(14))+hexTable.get(ssid.charAt(15))+
-                    hexTable.get(ssid.charAt(16))+hexTable.get(ssid.charAt(17))+hexTable.get(ssid.charAt(18));
+        try {
+            if(ssid.contains("PLDTHOMEFIBR_")&&ssid.length()==19){
+                password = "wlan"+hexTable.get(ssid.charAt(13))+hexTable.get(ssid.charAt(14))+hexTable.get(ssid.charAt(15))+
+                        hexTable.get(ssid.charAt(16))+hexTable.get(ssid.charAt(17))+hexTable.get(ssid.charAt(18));
+            }
+            else if(ssid.equals("HomeBro_ULTERA")){
+                password = "HomeBro_"+mac.charAt(9)+mac.charAt(10)+mac.charAt(12)+mac.charAt(13)+mac.charAt(15)+mac.charAt(16);
+            }
+            else if(ssid.equals("PLDTMyDSLBiz")||ssid.equals("PLDTMyDSL")||ssid.equals("PLDTHOMEDSL")){
+                password = "PLDTWIFI"+mac.substring(10,11).toUpperCase()+mac.substring(12,13).toUpperCase()+mac.substring(13,14).toUpperCase()+
+                        mac.substring(15,16).toUpperCase()+mac.substring(16).toUpperCase();
+            }
+            else if(ssid.contains("PLDTHOMEFIBR")&&ssid.length()==17){
+                password = "PLDTWIFI"+hexTable.get(ssid.charAt(12))+hexTable.get(ssid.charAt(13))+hexTable.get(ssid.charAt(14))+
+                        hexTable.get(ssid.charAt(15))+hexTable.get(ssid.charAt(16));
+            }
+            else if(ssid.contains("PLDTHOMEDSL")&&ssid.length()==16){
+                password = "PLDTWIFI"+(Integer.parseInt(ssid.substring(11))*3);
+            }
+            else {
+                password = null;
+            }
+        }catch (Exception e){
+            Toast.makeText(WifiConnect.this,"This PLDT wifi is currently not supported!",Toast.LENGTH_LONG).show();
         }
-        else if(ssid.equals("HomeBro_ULTERA")){
-            password = "HomeBro_"+mac.charAt(9)+mac.charAt(10)+mac.charAt(12)+mac.charAt(13)+mac.charAt(15)+mac.charAt(16);
-        }
-        else if(ssid.equals("PLDTMyDSLBiz")||ssid.equals("PLDTMyDSL")||ssid.equals("PLDTHOMEDSL")){
-            password = "PLDTWIFI"+mac.substring(10,11).toUpperCase()+mac.substring(12,13).toUpperCase()+mac.substring(13,14).toUpperCase()+
-                    mac.substring(15,16).toUpperCase()+mac.substring(16).toUpperCase();
-        }
-        else if(ssid.contains("PLDTHOMEFIBR")&&ssid.length()==17){
-            password = "PLDTWIFI"+hexTable.get(ssid.charAt(12))+hexTable.get(ssid.charAt(13))+hexTable.get(ssid.charAt(14))+
-                    hexTable.get(ssid.charAt(15))+hexTable.get(ssid.charAt(16));
-        }
-        else if(ssid.contains("PLDTHOMEDSL")&&ssid.length()==16){
-            password = "PLDTWIFI"+(Integer.parseInt(ssid.substring(11))*3);
-        }
-        else {
-            password = null;
-        }
-
     }
 
     @Override
@@ -194,12 +277,14 @@ public class WifiConnect extends Activity {
     @Override
     protected void onDestroy() {
         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-        for(WifiConfiguration i : list){
-            if(i.SSID == null){
-                break;
+        if(onCreateTestCode==null) {
+            for (WifiConfiguration i : list) {
+                if (i.SSID == null) {
+                    break;
+                }
+                wifiManager.removeNetwork(i.networkId);
+                wifiManager.saveConfiguration();
             }
-            wifiManager.removeNetwork(i.networkId);
-            wifiManager.saveConfiguration();
         }
         super.onDestroy();
     }
