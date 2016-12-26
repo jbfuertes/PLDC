@@ -22,6 +22,7 @@ import android.widget.ToggleButton;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringTokenizer;
 
 
 public class WifiConnect extends Activity {
@@ -129,18 +130,23 @@ public class WifiConnect extends Activity {
                         }
                         wificonfig.SSID = "\"" + ssid + "\"";
                         wificonfig.preSharedKey = "\""+password+"\"";
-                        wifiManager.addNetwork(wificonfig);
-                        list = wifiManager.getConfiguredNetworks();
-                        count = 0;
+                        wificonfig.BSSID =  mac;
+                        int netId = wifiManager.addNetwork(wificonfig);
+                        wifiManager.disconnect();
+                        wifiManager.enableNetwork(netId,true);
+                        wifiManager.reconnect();
+                        connectedWifi.setText("Connecting To: "+ssid);
+                        /*list = wifiManager.getConfiguredNetworks();
                         for( WifiConfiguration i : list ) {
                             if(i.SSID != null && i.SSID.equals("\"" + ssid + "\"")) {
                                 wifiManager.disconnect();
                                 wifiManager.enableNetwork(i.networkId, true);
                                 wifiManager.reconnect();
                                 connectedWifi.setText("Connecting To: "+ssid);
+                                Toast.makeText(WifiConnect.this,i.preSharedKey,Toast.LENGTH_LONG).show();
                                 break;
                             }
-                        }
+                        }*/
                     }
                 }
         );
@@ -235,17 +241,47 @@ public class WifiConnect extends Activity {
         hexTable.put('d',"2");
         hexTable.put('e',"1");
         hexTable.put('f',"0");
+        String ulteraLast = "";
+        if(mac.substring(16).equals("a")){
+            ulteraLast = "B";
+        }
+        else if(mac.substring(16).equals("b")){
+            ulteraLast = "C";
+        }
+        else if(mac.substring(16).equals("c")){
+            ulteraLast = "D";
+        }
+        else if(mac.substring(16).equals("d")){
+            ulteraLast = "E";
+        }
+        else if(mac.substring(16).equals("e")){
+            ulteraLast = "F";
+        }
+        else if(mac.substring(16).equals("f")){
+            ulteraLast = "0";
+        }
+        else if(mac.substring(16).equals("9")){
+            ulteraLast = "A";
+        }
+        else{
+            ulteraLast = String.valueOf(Integer.parseInt(mac.substring(16)+1));
+        }
         try {
             if(ssid.contains("PLDTHOMEFIBR_")&&ssid.length()==19){
                 password = "wlan"+hexTable.get(ssid.charAt(13))+hexTable.get(ssid.charAt(14))+hexTable.get(ssid.charAt(15))+
                         hexTable.get(ssid.charAt(16))+hexTable.get(ssid.charAt(17))+hexTable.get(ssid.charAt(18));
             }
             else if(ssid.equals("HomeBro_ULTERA")){
-                password = "HomeBro_"+mac.charAt(9)+mac.charAt(10)+mac.charAt(12)+mac.charAt(13)+mac.charAt(15)+mac.charAt(16);
+                password = "HomeBro_"+mac.substring(9,10).toUpperCase()+mac.substring(10,11).toUpperCase()+mac.substring(12,13).toUpperCase()
+                        +mac.substring(13,14).toUpperCase()+mac.substring(15,16).toUpperCase()+mac.substring(16).toUpperCase();
             }
-            else if(ssid.equals("PLDTMyDSLBiz")||ssid.equals("PLDTMyDSL")||ssid.equals("PLDTHOMEDSL")){
+            else if(ssid.equals("PLDTMyDSL")||ssid.equals("PLDTHOMEDSL")){
                 password = "PLDTWIFI"+mac.substring(10,11).toUpperCase()+mac.substring(12,13).toUpperCase()+mac.substring(13,14).toUpperCase()+
                         mac.substring(15,16).toUpperCase()+mac.substring(16).toUpperCase();
+            }
+            else if(ssid.equals("PLDTMyDSLBiz")){
+                password = "PLDTWIFI"+mac.substring(10,11)+mac.substring(12,13)+mac.substring(13,14)+
+                        mac.substring(15,16)+mac.substring(16);
             }
             else if(ssid.contains("PLDTHOMEFIBR")&&ssid.length()==17){
                 password = "PLDTWIFI"+hexTable.get(ssid.charAt(12))+hexTable.get(ssid.charAt(13))+hexTable.get(ssid.charAt(14))+
@@ -277,6 +313,12 @@ public class WifiConnect extends Activity {
 
     @Override
     protected void onDestroy() {
+        try {
+            code = dbHandler.getCode(1);
+            onCreateTestCode = code.get_Code();
+        }catch (Exception e){
+
+        }
         List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
         if(onCreateTestCode==null) {
             for (WifiConfiguration i : list) {
